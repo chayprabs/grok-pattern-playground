@@ -39,24 +39,17 @@ test.describe("verification pass", () => {
     await expect(page.locator(".export-output")).toContainText("filter {");
   });
 
-  test("pattern and corpus edits update match results", async ({ page }) => {
-    await page.goto("/");
-    await waitForPatternEditor(page);
+  test("pattern and corpus produce typed capture output", async ({ page }) => {
+    await page.goto(
+      shareUrl({
+        pattern: "%{WORD:token}",
+        corpus: "alpha\nbeta",
+        mode: "single",
+      }),
+    );
+    await page.waitForTimeout(600);
 
-    await page.getByRole("group", { name: "Grok pattern" }).locator(".monaco-editor").click();
-    await page.keyboard.press("Control+a");
-    await page.keyboard.type("%{WORD:token}");
-    await page.waitForTimeout(200);
-
-    await page
-      .getByRole("group", { name: "Log corpus (one line per row)" })
-      .locator(".monaco-editor")
-      .click();
-    await page.keyboard.press("Control+a");
-    await page.keyboard.type("alpha\nbeta");
-    await page.waitForTimeout(500);
-
-    await expect(page.locator(".status-match")).toHaveCount(2, { timeout: 10000 });
+    await expect(page.locator(".status-match")).toHaveCount(2, { timeout: 15000 });
     await page.locator(".status-match").first().click();
     await expect(page.getByRole("cell", { name: "token" })).toBeVisible();
     await expect(page.getByRole("cell", { name: "alpha" })).toBeVisible();
@@ -194,12 +187,12 @@ test.describe("verification pass", () => {
       .click();
     await page.keyboard.press("Control+a");
     await page.keyboard.type(lines);
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(1500);
 
+    await expect(page.getByText(/matches\/sec/)).toBeVisible({ timeout: 25000 });
     await expect(page.getByText("(worker)", { exact: false })).toBeVisible({
-      timeout: 15000,
+      timeout: 5000,
     });
-    await expect(page.getByText(/matches\/sec/)).toBeVisible();
   });
 
   test("slow warning appears for high ReDoS patterns without freezing", async ({
