@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="540" viewBox="0 0 960 540">
+  <rect width="960" height="540" fill="#fafafa"/>
+  <rect width="960" height="48" fill="#fff" stroke="#e8e8e8"/>
+  <text x="24" y="32" font-family="system-ui,sans-serif" font-size="18" font-weight="700">GrokParse</text>
+  <rect y="48" width="960" height="56" fill="#f3f4f6"/>
+  <text x="24" y="82" font-family="system-ui,sans-serif" font-size="13" fill="#666">Grok pattern playground  test, benchmark, export</text>
+  <rect x="16" y="120" width="300" height="360" rx="8" fill="#fff" stroke="#e8e8e8"/>
+  <rect x="332" y="120" width="300" height="360" rx="8" fill="#fff" stroke="#e8e8e8"/>
+  <rect x="648" y="120" width="296" height="360" rx="8" fill="#fff" stroke="#e8e8e8"/>
+  <text x="32" y="148" font-family="monospace" font-size="11" fill="#333">%{COMBINEDAPACHELOG}</text>
+  <text x="348" y="148" font-family="monospace" font-size="11" fill="#333">127.0.0.1 - - [10/Oct/2023...</text>
+  <circle cx="664" cy="148" r="4" fill="#16a34a"/>
+  <text x="676" y="152" font-family="monospace" font-size="10" fill="#333">matched line</text>
+</svg>

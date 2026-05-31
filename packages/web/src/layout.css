@@ -234,6 +234,43 @@
   font-size: 0.9rem;
 }
 
+.capture-highlight {
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+.highlighted-line {
+  word-break: break-all;
+}
+
+.monaco-wrap {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+}
+
+.monaco-wrap label,
+.code-fallback {
+  display: block;
+}
+
+.code-fallback {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem;
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  resize: vertical;
+}
+
+.redos-badge .warn-item {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--red);
+}
+
 .export-output {
   background: #f4f4f5;
   padding: 0.75rem;

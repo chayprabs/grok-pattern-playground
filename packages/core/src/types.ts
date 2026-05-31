@@ -19,11 +19,19 @@ export interface CaptureValue {
   type: string;
 }
 
+export interface CaptureSpan {
+  name: string;
+  start: number;
+  end: number;
+  type: string;
+}
+
 export interface MatchResult {
   line: string;
   matched: boolean;
   partial?: boolean;
   captures: Record<string, CaptureValue>;
+  captureSpans?: CaptureSpan[];
   divergencePosition?: number;
   matchLength?: number;
 }

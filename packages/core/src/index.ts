@@ -1,4 +1,5 @@
 export * from "./types.js";
+export type { CaptureSpan } from "./types.js";
 export { compile, mergeLibraries, definePattern } from "./compile.js";
 export { matchLine, matchCorpus, suggestFragments } from "./match.js";
 export { benchmark, evalCorpusP95 } from "./benchmark.js";

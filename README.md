@@ -4,6 +4,8 @@
 
 GrokParse is a **browser-only** playground (Pattern C+D). Your logs never leave your device after the initial page load.
 
+![GrokParse playground](docs/screenshot.svg)
+
 ## Features
 
 - **Grok compiler** — `%{PATTERN:name:type}` syntax with 120+ standard Logstash-style patterns
@@ -62,8 +64,13 @@ packages/
 
 MIT — see [LICENSE](LICENSE).
 
+## GitHub topics
+
+`grok` `grok-patterns` `logstash` `log-parsing` `grok-debugger` `regex` `fluent-bit` `vector-dev` `opensearch` `elastic-stack` `siem` `log-analysis` `pattern-tester` `redos` `online-tool`
+
 ## Links
 
 - [GitHub](https://github.com/chayprabs/grok-pattern-playground)
+- [Live demo](https://chayprabs.github.io/grok-pattern-playground/) (GitHub Pages, after deploy workflow runs)
 - [Privacy Policy](/privacy) (when hosted)
 - [Terms](/terms)

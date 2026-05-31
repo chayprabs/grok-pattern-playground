@@ -1,5 +1,33 @@
 import { typedCaptures } from "./field-types.js";
-import type { CompiledPattern, MatchResult } from "./types.js";
+import type {
+  CaptureSpan,
+  CaptureValue,
+  CompiledPattern,
+  MatchResult,
+} from "./types.js";
+
+function buildCaptureSpans(
+  line: string,
+  captures: Record<string, CaptureValue>,
+  matchLength: number,
+): CaptureSpan[] {
+  const spans: CaptureSpan[] = [];
+  let searchFrom = 0;
+  const portion = line.slice(0, matchLength);
+  for (const [name, cap] of Object.entries(captures)) {
+    const idx = portion.indexOf(cap.value, searchFrom);
+    if (idx >= 0) {
+      spans.push({
+        name,
+        start: idx,
+        end: idx + cap.value.length,
+        type: cap.type,
+      });
+      searchFrom = idx + cap.value.length;
+    }
+  }
+  return spans;
+}
 
 export function matchLine(
   compiled: CompiledPattern,
@@ -27,11 +55,15 @@ export function matchLine(
     compiled.fields,
   );
 
+  const matchLength = exec[0]?.length ?? 0;
+  const captureSpans = buildCaptureSpans(text, captures, matchLength);
+
   return {
     line: text,
     matched: true,
     captures,
-    matchLength: exec[0]?.length ?? 0,
+    captureSpans,
+    matchLength,
   };
 }
 

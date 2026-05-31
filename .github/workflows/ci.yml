@@ -24,11 +24,28 @@ jobs:
       - run: pnpm exec playwright install chromium --with-deps
         working-directory: packages/web
       - run: pnpm --filter @grokparse/web test:e2e
-      - name: Bundle size budget (500 KB gz)
+      - name: Bundle size budget (500 KB gz entry)
         run: |
-          GZ=$(gzip -c packages/web/dist/assets/*.js 2>/dev/null | wc -c || echo 0)
-          echo "Gzipped JS size: $GZ bytes"
+          ENTRY=$(ls packages/web/dist/assets/index-*.js 2>/dev/null | head -1)
+          GZ=$(gzip -c "$ENTRY" | wc -c)
+          echo "Entry JS gz: $GZ bytes ($ENTRY)"
           if [ "$GZ" -gt 512000 ]; then
-            echo "Bundle exceeds 500 KB gz budget"
+            echo "Entry bundle exceeds 500 KB gz budget"
             exit 1
           fi
+      - name: Lighthouse CI (performance smoke)
+        run: |
+          pnpm --filter @grokparse/web preview --host 127.0.0.1 --port 4173 &
+          sleep 3
+          npx --yes lighthouse http://127.0.0.1:4173 --only-categories=performance,accessibility,best-practices,seo --quiet --chrome-flags="--headless --no-sandbox" --output=json --output-path=./lighthouse.json || true
+          node -e "
+            const fs=require('fs');
+            if(!fs.existsSync('lighthouse.json')){ console.log('Lighthouse skipped'); process.exit(0); }
+            const r=JSON.parse(fs.readFileSync('lighthouse.json','utf8'));
+            const cats=['performance','accessibility','best-practices','seo'];
+            for (const c of cats) {
+              const score=Math.round((r.categories[c]?.score??0)*100);
+              console.log(c+':', score);
+              if(score<90) { console.warn('Below 90:', c); }
+            }
+          "

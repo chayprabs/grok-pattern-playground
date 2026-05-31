@@ -1,20 +1,25 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   benchmark,
   compile,
   decodeShare,
   diffPatterns,
   encodeShare,
+  estimateWorstCaseMs,
   exportTo,
   fullPatternLibrary,
   matchCorpus,
   sampleLogs,
   suggestFragments,
+  type CaptureValue,
   type ExportTarget,
   type MatchResult,
 } from "@grokparse/core";
+import { CodeEditor, type CodeEditorHandle } from "./CodeEditor";
+import { MatchLineHighlight } from "./MatchLineHighlight";
 import { useDebounce } from "../hooks/useDebounce";
 import { useCustomPatterns } from "../hooks/useCustomPatterns";
+import { useBenchmarkWorker } from "../hooks/useBenchmarkWorker";
 import { buildLibrary } from "../lib/patternLib";
 
 type Mode = "single" | "diff";
@@ -37,6 +42,10 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
   const [libSearch, setLibSearch] = useState("");
   const [compileError, setCompileError] = useState<string | null>(null);
   const [compileErrorB, setCompileErrorB] = useState<string | null>(null);
+  const [slowWarning, setSlowWarning] = useState(false);
+  const patternEditorRef = useRef<CodeEditorHandle>(null);
+  const { result: workerBench, running: benchRunning, run: runWorkerBench } =
+    useBenchmarkWorker();
 
   const debouncedPattern = useDebounce(pattern, 100);
   const debouncedCorpus = useDebounce(corpus, 100);
@@ -50,6 +59,7 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
       setCorpus(shared.corpus);
       setMode(shared.mode);
       if (shared.patternB) setPatternB(shared.patternB);
+      if (shared.engine) setExportTarget(shared.engine);
     }
   }, []);
 
@@ -113,8 +123,27 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
 
   const benchStats = useMemo(() => {
     if (!compiled || corpusLines.length === 0) return null;
+    if (corpusLines.length >= 50) return null;
     return benchmark(compiled, corpusLines, benchIters);
   }, [compiled, corpusLines, benchIters]);
+
+  useEffect(() => {
+    if (!compiled || corpusLines.length < 50) return;
+    runWorkerBench(debouncedPattern, corpusLines, benchIters);
+  }, [compiled, corpusLines, benchIters, debouncedPattern, runWorkerBench]);
+
+  const activeBenchStats =
+    corpusLines.length >= 50 ? workerBench : benchStats;
+
+  useEffect(() => {
+    if (!compiled) {
+      setSlowWarning(false);
+      return;
+    }
+    const probe =
+      corpusLines[0] ?? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    setSlowWarning(estimateWorstCaseMs(compiled.regex, probe));
+  }, [compiled, corpusLines]);
 
   const exportContent = useMemo(() => {
     if (!compiled) return "";
@@ -136,9 +165,14 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
       corpus,
       mode,
       patternB: mode === "diff" ? patternB : undefined,
+      engine: exportTarget,
     });
     navigator.clipboard.writeText(url);
-  }, [pattern, corpus, mode, patternB]);
+  }, [pattern, corpus, mode, patternB, exportTarget]);
+
+  const insertPattern = useCallback((token: string) => {
+    patternEditorRef.current?.insertAtCursor(token);
+  }, []);
 
   const loadSample = (id: string) => {
     const s = sampleLogs.find((x) => x.id === id);
@@ -197,26 +231,24 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
 
       <div className="panes">
         <section className="pane pane-pattern">
-          <label htmlFor="pattern">Grok pattern</label>
-          <textarea
+          <CodeEditor
+            ref={patternEditorRef}
             id="pattern"
+            label="Grok pattern"
             value={pattern}
-            onChange={(e) => setPattern(e.target.value)}
-            rows={4}
-            spellCheck={false}
-            placeholder="%{COMBINEDAPACHELOG}"
+            onChange={setPattern}
+            rows={5}
+            language="plaintext"
           />
           {mode === "diff" && (
-            <>
-              <label htmlFor="pattern-b">Pattern B</label>
-              <textarea
-                id="pattern-b"
-                value={patternB}
-                onChange={(e) => setPatternB(e.target.value)}
-                rows={3}
-                spellCheck={false}
-              />
-            </>
+            <CodeEditor
+              id="pattern-b"
+              label="Pattern B"
+              value={patternB}
+              onChange={setPatternB}
+              rows={4}
+              language="plaintext"
+            />
           )}
           {compileError && <p className="error">{compileError}</p>}
           {mode === "diff" && compileErrorB && (
@@ -225,6 +257,11 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
           {compiled && (
             <div className="redos-badge" data-risk={compiled.reDosRisk}>
               ReDoS: {compiled.reDosRisk}
+              {slowWarning && (
+                <span className="warn-item">
+                  Worst-case input may exceed 100ms — test on a small corpus first.
+                </span>
+              )}
               {compiled.warnings.map((w) => (
                 <span key={w} className="warn-item">
                   {w}
@@ -247,9 +284,7 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
                   <button
                     type="button"
                     className="lib-insert"
-                    onClick={() =>
-                      setPattern((prev) => `${prev}%{${p.name}}`)
-                    }
+                    onClick={() => insertPattern(`%{${p.name}}`)}
                   >
                     {p.name}
                   </button>
@@ -299,14 +334,13 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
         </section>
 
         <section className="pane pane-corpus">
-          <label htmlFor="corpus">Log corpus (one line per row)</label>
-          <textarea
+          <CodeEditor
             id="corpus"
+            label="Log corpus (one line per row)"
             value={corpus}
-            onChange={(e) => setCorpus(e.target.value)}
+            onChange={setCorpus}
             rows={14}
-            spellCheck={false}
-            placeholder="Paste log lines here…"
+            language="plaintext"
           />
         </section>
 
@@ -339,7 +373,11 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
                   >
                     <span className="line-num">{i + 1}</span>
                     <span className="status-dot" />
-                    <code>{highlightCaptures(r)}</code>
+                    {r.matched && r.captureSpans?.length ? (
+                      <MatchLineHighlight line={r.line} spans={r.captureSpans} />
+                    ) : (
+                      <code>{r.line}</code>
+                    )}
                   </button>
                 ))}
           </div>
@@ -368,15 +406,18 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(selectedResult.captures).map(
-                      ([k, v]) => (
-                        <tr key={k}>
-                          <td>{k}</td>
-                          <td>{v.value}</td>
-                          <td>{v.type}</td>
-                        </tr>
-                      ),
-                    )}
+                    {(
+                      Object.entries(selectedResult.captures) as [
+                        string,
+                        CaptureValue,
+                      ][]
+                    ).map(([k, v]) => (
+                      <tr key={k}>
+                        <td>{k}</td>
+                        <td>{v.value}</td>
+                        <td>{v.type}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               )}
@@ -398,10 +439,12 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
               onChange={(e) => setBenchIters(Number(e.target.value))}
             />
           </label>
-          {benchStats && (
+          {benchRunning && <p>Running benchmark in worker…</p>}
+          {activeBenchStats && (
             <p>
-              {benchStats.matchesPerSec.toFixed(0)} matches/sec · p95{" "}
-              {benchStats.p95Ms.toFixed(2)} ms
+              {activeBenchStats.matchesPerSec.toFixed(0)} matches/sec · p95{" "}
+              {activeBenchStats.p95Ms.toFixed(2)} ms
+              {corpusLines.length >= 50 && " (worker)"}
             </p>
           )}
         </div>
@@ -429,12 +472,4 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
       </section>
     </main>
   );
-}
-
-function highlightCaptures(r: MatchResult): string {
-  if (!r.matched) return r.line;
-  const parts = Object.entries(r.captures).map(
-    ([k, v]) => `${k}=${v.value}(${v.type})`,
-  );
-  return parts.length ? `${r.line} → ${parts.join(", ")}` : r.line;
 }

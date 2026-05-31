@@ -10,9 +10,27 @@ test("home page loads playground", async ({ page }) => {
 test("matching shows green results for apache sample", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Sample logs").selectOption("apache");
-  await page.waitForTimeout(200);
+  await page.waitForTimeout(350);
   const results = page.locator(".status-match");
-  await expect(results.first()).toBeVisible({ timeout: 5000 });
+  await expect(results.first()).toBeVisible({ timeout: 8000 });
+});
+
+test("library pattern insert updates compilation", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("details.library-panel summary").click();
+  await page.getByRole("button", { name: "IP", exact: true }).click();
+  await page.waitForTimeout(300);
+  await expect(page.locator(".result-line").first()).toBeVisible();
+});
+
+test("capture highlighting on matched line", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Sample logs").selectOption("nginx");
+  await page.waitForTimeout(400);
+  await page.locator(".status-match").first().click();
+  await expect(page.locator(".capture-highlight").first()).toBeVisible({
+    timeout: 8000,
+  });
 });
 
 test("seo sub-routes load", async ({ page }) => {

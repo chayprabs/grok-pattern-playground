@@ -1,9 +1,16 @@
+export type ShareEngine =
+  | "logstash"
+  | "vector"
+  | "opensearch"
+  | "fluentbit"
+  | "javascript";
+
 export interface ShareState {
   pattern: string;
   corpus: string;
   mode: "single" | "diff";
   patternB?: string;
-  engine?: string;
+  engine?: ShareEngine;
 }
 
 export function encodeShare(state: ShareState): string {

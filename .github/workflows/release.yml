@@ -21,8 +21,26 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @grokparse/core build
       - run: pnpm --filter @grokparse/web build
+      - name: Build single-file HTML
+        run: |
+          cd packages/web
+          pnpm add -D vite-plugin-singlefile@2
+          node -e "
+            const fs=require('fs');
+            const cfg=\`import { defineConfig } from 'vite';
+            import react from '@vitejs/plugin-react';
+            import { viteSingleFile } from 'vite-plugin-singlefile';
+            export default defineConfig({
+              plugins: [react(), viteSingleFile()],
+              build: { outDir: 'dist-single' },
+            });\`;
+            fs.writeFileSync('vite.single.config.ts', cfg);
+          "
+          pnpm exec vite build -c vite.single.config.ts
       - name: Upload dist artifact
         uses: actions/upload-artifact@v4
         with:
           name: grokparse-web-dist
-          path: packages/web/dist
+          path: |
+            packages/web/dist
+            packages/web/dist-single

@@ -15,6 +15,20 @@ function escapeRegexLiteral(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function extractFieldsFromRegexSource(source: string): PatternField[] {
+  const fields: PatternField[] = [];
+  const re = /\(\?<([a-zA-Z_][a-zA-Z0-9_]*)>/g;
+  let match: RegExpExecArray | null;
+  const seen = new Set<string>();
+  while ((match = re.exec(source)) !== null) {
+    const name = match[1];
+    if (seen.has(name)) continue;
+    seen.add(name);
+    fields.push({ name, subPattern: name });
+  }
+  return fields;
+}
+
 function expandPattern(
   name: string,
   lib: PatternLibrary,
@@ -87,11 +101,14 @@ export function compile(
     );
   }
 
+  const mergedFields =
+    fields.length > 0 ? fields : extractFieldsFromRegexSource(regex.source);
+
   const { risk, warnings } = analyzeReDos(regex.source);
   return {
     regex,
     source: regex.source,
-    fields,
+    fields: mergedFields,
     reDosRisk: risk,
     warnings,
   };

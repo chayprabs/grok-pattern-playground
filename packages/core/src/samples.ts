@@ -18,7 +18,8 @@ export const sampleLogs: SampleLog[] = [
   {
     id: "syslog",
     name: "Syslog",
-    suggestedPattern: "%{SYSLOGLINE}",
+    suggestedPattern:
+      "%{SYSLOGTIMESTAMP:timestamp} %{IPORHOST:host} %{PROG:program}(?:\\[%{POSINT:pid}\\])?: %{GREEDYDATA:message}",
     lines: [
       "Oct 10 13:55:36 server01 sshd[12345]: Accepted publickey for deploy from 10.0.0.1 port 22",
       "Oct 10 13:56:01 server01 kernel: USB disconnect, device number 2",
@@ -44,7 +45,7 @@ export const sampleLogs: SampleLog[] = [
   {
     id: "cloudtrail",
     name: "CloudTrail (JSON)",
-    suggestedPattern: '%{TIMESTAMP_ISO8601:eventTime}',
+    suggestedPattern: '"eventTime":"%{NOTSPACE:eventTime}"',
     lines: [
       '{"eventTime":"2023-10-10T13:55:36Z","eventName":"ConsoleLogin","userIdentity":{"type":"IAMUser"}}',
     ],
