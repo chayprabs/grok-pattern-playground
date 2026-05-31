@@ -122,9 +122,22 @@ const MonacoEditorInner = forwardRef(function MonacoEditorInner(
     },
   }));
 
+  const labelId = `${id}-label`;
+
   return (
-    <div className="monaco-wrap">
-      <label htmlFor={id}>{label}</label>
+    <div className="monaco-wrap" role="group" aria-labelledby={labelId}>
+      <label id={labelId} htmlFor={id}>
+        {label}
+      </label>
+      <input
+        type="text"
+        id={id}
+        className="sr-only"
+        value={value}
+        readOnly
+        tabIndex={-1}
+        aria-hidden="true"
+      />
       <Monaco
         height={height}
         language={language}
@@ -140,6 +153,7 @@ const MonacoEditorInner = forwardRef(function MonacoEditorInner(
           scrollBeyondLastLine: false,
           wordWrap: "on",
           padding: { top: 8, bottom: 8 },
+          ariaLabel: label,
         }}
         theme="vs"
       />

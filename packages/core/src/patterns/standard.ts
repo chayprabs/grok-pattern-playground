@@ -31,7 +31,16 @@ export const standardPatterns: PatternLibrary = {
     description: "UUID",
   },
   // Network
-  IP: { name: "IP", pattern: "(?:%{IPV6}|%{IPV4})", description: "IPv4 or IPv6" },
+  IPV4_MAPPED: {
+    name: "IPV4_MAPPED",
+    pattern: "::ffff:%{IPV4}",
+    description: "IPv4-mapped IPv6 address",
+  },
+  IP: {
+    name: "IP",
+    pattern: "(?:%{IPV4}|%{IPV4_MAPPED}|%{IPV6})",
+    description: "IPv4 or IPv6",
+  },
   IPV4: {
     name: "IPV4",
     pattern:
@@ -46,7 +55,8 @@ export const standardPatterns: PatternLibrary = {
   },
   HOSTNAME: {
     name: "HOSTNAME",
-    pattern: "\\b(?:[0-9A-Za-z][0-9A-Za-z-]{0,62})(?:\\.(?:[0-9A-Za-z][0-9A-Za-z-]{0,62}))*\\b",
+    pattern:
+      "\\b(?=[a-zA-Z0-9.-]*[a-zA-Z])[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?))*\\b",
   },
   HOSTPORT: { name: "HOSTPORT", pattern: "%{IPORHOST}:%{POSINT}" },
   IPORHOST: { name: "IPORHOST", pattern: "(?:%{IP}|%{HOSTNAME})" },
@@ -114,14 +124,18 @@ export const standardPatterns: PatternLibrary = {
     description: "Syslog line",
   },
   SYSLOGHOST: { name: "SYSLOGHOST", pattern: "%{IPORHOST}" },
-  PROG: { name: "PROG", pattern: "[a-zA-Z0-9_\\-]+" },
+  PROG: { name: "PROG", pattern: "[a-zA-Z0-9._/-]+" },
   // Log levels
   LOGLEVEL: {
     name: "LOGLEVEL",
     pattern: "([Aa]lert|ALERT|[Tt]race|TRACE|[Dd]ebug|DEBUG|[Nn]otice|NOTICE|[Ii]nfo|INFO|[Ww]arn(?:ing)?|WARN(?:ING)?|[Ee]rr(?:or)?|ERR(?:OR)?|[Cc]rit?(?:ical)?|CRIT?(?:ICAL)?|[Ff]atal|FATAL|[Ss]evere|SEVERE|EMERG(?:ENCY)?|[Ee]merg(?:ency)?)",
   },
   // Java
-  JAVA_CLASS: { name: "JAVA_CLASS", pattern: "(?:[a-zA-Z_$][a-zA-Z\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\d_$]*" },
+  JAVA_CLASS: {
+    name: "JAVA_CLASS",
+    pattern: "(?:[a-zA-Z_$][a-zA-Z\\d_$]*\\.)+[a-zA-Z_$][a-zA-Z\\d_$]*",
+    description: "Fully qualified Java class name",
+  },
   JAVA_STACKTRACEPART: {
     name: "JAVA_STACKTRACEPART",
     pattern: "\\s+at %{JAVA_CLASS:class}\\.%{WORD:method}\\(%{DATA:file}\\)",
@@ -345,7 +359,7 @@ const extras: [string, string, string?][] = [
   ["INFO_MSG", "%{GREEDYDATA}"],
   ["WARN_MSG", "%{GREEDYDATA}"],
   ["ERR_MSG", "%{GREEDYDATA}"],
-  ["CLOUDTRAIL", '\\{.*"eventTime".*\\}', "AWS CloudTrail JSON line"],
+  ["CLOUDTRAIL", '^\\{.*"eventTime".*\\}$', "AWS CloudTrail JSON line"],
 ];
 
 for (const [name, pattern, description] of extras) {

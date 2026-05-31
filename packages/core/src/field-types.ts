@@ -4,6 +4,7 @@ const IPV4 =
   /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d?\d)(?:\.(?!$)|$)){4}$/;
 const IPV6 =
   /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(::1)|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4})$/;
+const IPV4_MAPPED_IPV6 = /^::ffff:(\d{1,3}\.){3}\d{1,3}$/i;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const URI = /^https?:\/\/.+/i;
 const MAC = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
@@ -43,7 +44,7 @@ export function inferFieldType(value: string, hint?: string): string {
   if (/^-?\d+$/.test(v)) return "int";
   if (/^-?\d+\.\d+$/.test(v)) return "float";
   if (IPV4.test(v)) return "ipv4";
-  if (IPV6.test(v)) return "ipv6";
+  if (IPV4_MAPPED_IPV6.test(v) || IPV6.test(v)) return "ipv6";
   if (EMAIL.test(v)) return "email";
   if (URI.test(v)) return "uri";
   if (MAC.test(v)) return "mac";

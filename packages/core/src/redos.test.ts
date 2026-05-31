@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { analyzeReDos, estimateWorstCaseMs } from "./redos.js";
 
 describe("ReDoS acceptance A2", () => {
-  it("flags (a+)+ as high or medium risk", () => {
+  it("flags (a+)+ as high risk", () => {
     const { risk } = analyzeReDos("(a+)+");
-    expect(["high", "medium"]).toContain(risk);
+    expect(risk).toBe("high");
   });
 
   it("detects slow worst-case execution with non-matching probe", () => {

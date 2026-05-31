@@ -43,15 +43,21 @@ source = '''
         null,
         2,
       );
-    case "fluentbit":
+    case "fluentbit": {
+      const timeField = fields.find((f) =>
+        /time|date|timestamp/i.test(f),
+      );
+      const timeLines = timeField
+        ? `    Time_Key    ${timeField}\n    Time_Format %Y-%m-%dT%H:%M:%S.%L\n`
+        : "";
       return `# Grok pattern (use with a grok parser plugin or convert to PCRE)
 # Pattern: ${raw}
 [PARSER]
     Name        grok_parse
     Format      regex
     Regex       ${compiled.source.replace(/\(\?<([^>]+)>/g, "(?P<$1>")}
-    Time_Key    time
-    Time_Format %Y-%m-%dT%H:%M:%S.%L`;
+${timeLines}`.trimEnd();
+    }
     case "javascript":
       return `const pattern = ${compiled.regex.toString()};
 // Named fields: ${fieldList(compiled)}
@@ -97,10 +103,15 @@ export function validateExportSyntax(
       }
       return { valid: false, message: "Missing Vector transform block" };
     case "logstash":
-      if (content.includes("grok {") && content.includes("match =>")) {
-        return { valid: true, message: "Logstash grok block present" };
+      if (
+        content.includes("filter {") &&
+        content.includes("grok {") &&
+        content.includes("match =>") &&
+        content.includes("tag_on_failure")
+      ) {
+        return { valid: true, message: "Logstash filter block present" };
       }
-      return { valid: false, message: "Missing Logstash grok filter" };
+      return { valid: false, message: "Missing complete Logstash filter block" };
     case "fluentbit":
       if (content.includes("[PARSER]") && content.includes("Regex")) {
         return { valid: true, message: "Fluent Bit parser block present" };

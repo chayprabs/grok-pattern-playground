@@ -4,7 +4,7 @@ import type { ReDosRisk } from "./types.js";
 const CATASTROPHIC_PATTERNS = [
   /(\w+\*)+/,
   /(\.\*)+/,
-  /(\([^)]*\+[^)]*\))+/,
+  /\([^)]*[*+][^)]*\)[*+]/,
   /(a+)+/,
   /(x+)+y/,
   /\([^)]*\|[^)]*\)\+/,
@@ -17,26 +17,35 @@ export function analyzeReDos(source: string): {
   const warnings: string[] = [];
   let risk: ReDosRisk = "none";
 
-  if (!safeRegex(source)) {
-    risk = "high";
-    warnings.push("Pattern failed safe-regex check (possible catastrophic backtracking).");
-  }
-
   for (const catastrophic of CATASTROPHIC_PATTERNS) {
     if (catastrophic.test(source)) {
-      if (risk !== "high") risk = "medium";
-      warnings.push("Nested quantifiers or alternation with quantifiers detected.");
+      risk = "high";
+      warnings.push(
+        "Nested quantifiers or alternation with quantifiers detected (catastrophic backtracking risk).",
+      );
       break;
     }
   }
 
-  if (/\(\?[^)]*\+/.test(source) || /\([^)]*\)\{[2-9]/.test(source)) {
-    if (risk === "none") risk = "low";
+  if (risk !== "high" && /\(\?[^)]*\+/.test(source)) {
+    risk = "medium";
+    warnings.push("Possessive or nested quantifiers may increase backtracking cost.");
+  }
+
+  if (risk === "none" && !safeRegex(source)) {
+    risk = "low";
+    warnings.push(
+      "Heuristic check suggests elevated backtracking cost; test on a small corpus first.",
+    );
+  }
+
+  if (/\([^)]*\)\{[2-9]/.test(source) && risk === "none") {
+    risk = "low";
     warnings.push("Repeated groups may increase backtracking cost.");
   }
 
-  if (source.length > 500) {
-    if (risk === "none") risk = "low";
+  if (source.length > 500 && risk === "none") {
+    risk = "low";
     warnings.push("Very long regex may be slow on large corpora.");
   }
 

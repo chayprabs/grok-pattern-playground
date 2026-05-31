@@ -44,8 +44,12 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
   const [compileErrorB, setCompileErrorB] = useState<string | null>(null);
   const [slowWarning, setSlowWarning] = useState(false);
   const patternEditorRef = useRef<CodeEditorHandle>(null);
-  const { result: workerBench, running: benchRunning, run: runWorkerBench } =
-    useBenchmarkWorker();
+  const {
+    result: workerBench,
+    error: workerBenchError,
+    running: benchRunning,
+    run: runWorkerBench,
+  } = useBenchmarkWorker();
 
   const debouncedPattern = useDebounce(pattern, 100);
   const debouncedCorpus = useDebounce(corpus, 100);
@@ -129,8 +133,8 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
 
   useEffect(() => {
     if (!compiled || corpusLines.length < 50) return;
-    runWorkerBench(debouncedPattern, corpusLines, benchIters);
-  }, [compiled, corpusLines, benchIters, debouncedPattern, runWorkerBench]);
+    runWorkerBench(debouncedPattern, corpusLines, benchIters, custom);
+  }, [compiled, corpusLines, benchIters, debouncedPattern, custom, runWorkerBench]);
 
   const activeBenchStats =
     corpusLines.length >= 50 ? workerBench : benchStats;
@@ -155,7 +159,9 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
     return Object.values(fullPatternLibrary).filter(
       (p) =>
         p.name.toLowerCase().includes(q) ||
-        (p.description?.toLowerCase().includes(q) ?? false),
+        (p.description?.toLowerCase().includes(q) ?? false) ||
+        (p.pattern?.toLowerCase().includes(q) ?? false) ||
+        (p.example?.toLowerCase().includes(q) ?? false),
     );
   }, [libSearch]);
 
@@ -347,7 +353,9 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
         <section className="pane pane-results">
           <h2>Results</h2>
           <div className="results-scroll">
-            {mode === "diff" && compileErrorB ? (
+            {mode === "diff" && compileError && !compiled ? (
+              <p className="error">Fix Pattern A to view diff results.</p>
+            ) : mode === "diff" && compileErrorB ? (
               <p className="error">Fix Pattern B to view diff results.</p>
             ) : mode === "diff" && corpusLines.length === 0 ? (
               <p className="muted-hint">Add log lines to compare patterns.</p>
@@ -436,10 +444,17 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
               min={1}
               max={100}
               value={benchIters}
-              onChange={(e) => setBenchIters(Number(e.target.value))}
+              onChange={(e) =>
+                setBenchIters(
+                  Math.max(1, Math.min(100, Number(e.target.value) || 1)),
+                )
+              }
             />
           </label>
           {benchRunning && <p>Running benchmark in worker…</p>}
+          {workerBenchError && (
+            <p className="error">Benchmark error: {workerBenchError}</p>
+          )}
           {activeBenchStats && (
             <p>
               {activeBenchStats.matchesPerSec.toFixed(0)} matches/sec · p95{" "}
