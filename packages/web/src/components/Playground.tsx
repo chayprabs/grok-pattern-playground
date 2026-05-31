@@ -36,6 +36,7 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
   const [customPat, setCustomPat] = useState("");
   const [libSearch, setLibSearch] = useState("");
   const [compileError, setCompileError] = useState<string | null>(null);
+  const [compileErrorB, setCompileErrorB] = useState<string | null>(null);
 
   const debouncedPattern = useDebounce(pattern, 100);
   const debouncedCorpus = useDebounce(corpus, 100);
@@ -83,6 +84,23 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
     }
   }, [debouncedPattern, library]);
 
+  useEffect(() => {
+    if (mode !== "diff") {
+      setCompileErrorB(null);
+      return;
+    }
+    try {
+      compile(debouncedPatternB, library);
+      setCompileErrorB(null);
+    } catch (e) {
+      setCompileErrorB(e instanceof Error ? e.message : "Compile error");
+    }
+  }, [debouncedPatternB, library, mode]);
+
+  useEffect(() => {
+    setSelectedLine(null);
+  }, [mode]);
+
   const results: MatchResult[] = useMemo(() => {
     if (!compiled) return [];
     return matchCorpus(compiled, corpusLines);
@@ -100,8 +118,8 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
 
   const exportContent = useMemo(() => {
     if (!compiled) return "";
-    return exportTo(compiled, exportTarget, pattern);
-  }, [compiled, exportTarget, pattern]);
+    return exportTo(compiled, exportTarget, debouncedPattern);
+  }, [compiled, exportTarget, debouncedPattern]);
 
   const filteredLibrary = useMemo(() => {
     const q = libSearch.toLowerCase();
@@ -201,6 +219,9 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
             </>
           )}
           {compileError && <p className="error">{compileError}</p>}
+          {mode === "diff" && compileErrorB && (
+            <p className="error">Pattern B: {compileErrorB}</p>
+          )}
           {compiled && (
             <div className="redos-badge" data-risk={compiled.reDosRisk}>
               ReDoS: {compiled.reDosRisk}
@@ -292,20 +313,24 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
         <section className="pane pane-results">
           <h2>Results</h2>
           <div className="results-scroll">
-            {mode === "diff" && diffResults.length > 0
-              ? diffResults.map((d) => (
-                  <div
-                    key={d.index}
-                    className={`result-line ${d.changed ? "changed" : ""}`}
-                  >
-                    <span className="line-num">{d.index + 1}</span>
-                    <span>
-                      A:{d.patternA ? "✓" : "✗"} B:{d.patternB ? "✓" : "✗"}
-                    </span>
-                    <code>{d.line}</code>
-                  </div>
-                ))
-              : results.map((r, i) => (
+            {mode === "diff" && compileErrorB ? (
+              <p className="error">Fix Pattern B to view diff results.</p>
+            ) : mode === "diff" && corpusLines.length === 0 ? (
+              <p className="muted-hint">Add log lines to compare patterns.</p>
+            ) : mode === "diff" ? (
+              diffResults.map((d) => (
+                <div
+                  key={d.index}
+                  className={`result-line ${d.changed ? "changed" : ""}`}
+                >
+                  <span className="line-num">{d.index + 1}</span>
+                  <span>
+                    A:{d.patternA ? "✓" : "✗"} B:{d.patternB ? "✓" : "✗"}
+                  </span>
+                  <code>{d.line}</code>
+                </div>
+              ))
+            ) : results.map((r, i) => (
                   <button
                     type="button"
                     key={i}

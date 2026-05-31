@@ -5,11 +5,12 @@ export function matchLine(
   compiled: CompiledPattern,
   line: string,
 ): MatchResult {
-  const exec = compiled.regex.exec(line);
+  const text = line ?? "";
+  const exec = compiled.regex.exec(text);
   if (!exec) {
-    const partial = partialMatch(compiled, line);
+    const partial = partialMatch(compiled, text);
     return {
-      line,
+      line: text,
       matched: false,
       partial: partial.partial,
       captures: {},
@@ -27,7 +28,7 @@ export function matchLine(
   );
 
   return {
-    line,
+    line: text,
     matched: true,
     captures,
     matchLength: exec[0]?.length ?? 0,
@@ -48,12 +49,23 @@ function partialMatch(
   let best = 0;
   for (let i = 1; i <= line.length; i++) {
     const prefix = line.slice(0, i);
-    if (compiled.regex.test(prefix)) {
-      best = i;
-    }
+    const m = compiled.regex.exec(prefix);
     compiled.regex.lastIndex = 0;
+    if (m && m.index === 0 && m[0].length > 0) {
+      best = Math.max(best, m[0].length);
+    } else if (m && m.index === 0 && m[0].length === 0 && i > 0) {
+      best = Math.max(best, 0);
+    }
+    // Prefix consumed but line longer than match => partial at match end
+    if (m && m.index === 0 && m[0].length < prefix.length && m[0].length > 0) {
+      return {
+        partial: true,
+        matchLength: m[0].length,
+        divergencePosition: m[0].length,
+      };
+    }
   }
-  if (best > 0) {
+  if (best > 0 && best < line.length) {
     return {
       partial: true,
       matchLength: best,

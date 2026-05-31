@@ -49,6 +49,12 @@ export function compile(
   pattern: string,
   lib: PatternLibrary,
 ): CompiledPattern {
+  if (!pattern.trim()) {
+    throw new Error("Pattern cannot be empty");
+  }
+  if (/%\{[^}]*$/.test(pattern) || /%\{[^:}]+:\s*\}/.test(pattern)) {
+    throw new Error("Malformed grok token in pattern");
+  }
   const fields: PatternField[] = [];
   let depth = 0;
 
@@ -68,10 +74,13 @@ export function compile(
     },
   );
 
-  const anchored = source.startsWith("^") ? source : source;
+  if (/%\{/.test(source)) {
+    throw new Error("Unresolved grok tokens remain after expansion");
+  }
+
   let regex: RegExp;
   try {
-    regex = new RegExp(anchored);
+    regex = new RegExp(source);
   } catch (e) {
     throw new Error(
       `Invalid regex after grok expansion: ${e instanceof Error ? e.message : String(e)}`,

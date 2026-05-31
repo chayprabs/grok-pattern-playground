@@ -44,9 +44,11 @@ export function analyzeReDos(source: string): {
 }
 
 export function estimateWorstCaseMs(regex: RegExp, sample: string, limitMs = 100): boolean {
+  const probe =
+    sample.length > 0 ? sample.repeat(30) + "!" : "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa!";
   const start = performance.now();
   try {
-    regex.test(sample.repeat(50));
+    regex.test(probe);
   } catch {
     return true;
   }

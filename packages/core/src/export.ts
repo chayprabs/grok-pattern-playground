@@ -44,10 +44,12 @@ source = '''
         2,
       );
     case "fluentbit":
-      return `[PARSER]
+      return `# Grok pattern (use with a grok parser plugin or convert to PCRE)
+# Pattern: ${raw}
+[PARSER]
     Name        grok_parse
     Format      regex
-    Regex       ${compiled.source}
+    Regex       ${compiled.source.replace(/\(\?<([^>]+)>/g, "(?P<$1>")}
     Time_Key    time
     Time_Format %Y-%m-%dT%H:%M:%S.%L`;
     case "javascript":
@@ -63,7 +65,11 @@ export function parseLine(line) {
 }
 
 function escapeLogstash(s: string): string {
-  return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  return s
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r");
 }
 
 function escapeToml(s: string): string {

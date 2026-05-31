@@ -215,6 +215,25 @@
   border-top: 1px solid var(--border);
 }
 
+@media (max-width: 768px) {
+  .bottom-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .playground,
+  .seo-bar,
+  .topbar {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+.muted-hint {
+  padding: 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .export-output {
   background: #f4f4f5;
   padding: 0.75rem;
