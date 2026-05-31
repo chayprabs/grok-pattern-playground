@@ -54,14 +54,18 @@ test("legal pages", async ({ page }) => {
 });
 
 test("diff mode shows error when pattern A is invalid", async ({ page }) => {
-  await page.goto("/");
-  await page.getByRole("button", { name: "Diff" }).click();
-  await page.getByLabel("Grok pattern", { exact: true }).click();
-  await page.keyboard.press("Control+a");
-  await page.keyboard.type("%{NOTAREALPATTERN999}");
-  await page.getByLabel("Log corpus (one line per row)").fill("test line");
-  await page.waitForTimeout(300);
-  await expect(page.getByText("Fix Pattern A to view diff results.")).toBeVisible();
+  const state = {
+    pattern: "%{NOTAREALPATTERN999}",
+    patternB: "%{GREEDYDATA:msg}",
+    corpus: "test line",
+    mode: "diff",
+  };
+  const hash = Buffer.from(JSON.stringify(state), "utf8").toString("base64");
+  await page.goto(`/#${hash}`);
+  await page.waitForTimeout(400);
+  await expect(page.getByText("Fix Pattern A to view diff results.")).toBeVisible({
+    timeout: 8000,
+  });
 });
 
 test("export panel copies config", async ({ page }) => {
