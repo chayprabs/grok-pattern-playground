@@ -49,8 +49,11 @@ test("seo sub-routes load", async ({ page }) => {
 test("legal pages", async ({ page }) => {
   await page.goto("/privacy");
   await expect(page.getByRole("heading", { name: "Privacy Policy" })).toBeVisible();
+  await expect(page.getByText("browser-only")).toBeVisible();
   await page.goto("/terms");
   await expect(page.getByRole("heading", { name: "Terms and Conditions" })).toBeVisible();
+  await expect(page.getByText("Limitation of liability")).toBeVisible();
+  await expect(page.getByText("Indemnification")).toBeVisible();
 });
 
 test("diff mode shows error when pattern A is invalid", async ({ page }) => {

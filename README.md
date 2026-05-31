@@ -62,7 +62,19 @@ packages/
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT — see [LICENSE](LICENSE). Additional notice: [NOTICE](NOTICE).
+
+## Legal
+
+Use of GrokParse constitutes acceptance of:
+
+- [Terms and Conditions](docs/legal/TERMS.md)
+- [Privacy Policy](docs/legal/PRIVACY.md)
+- [Disclaimer](docs/legal/DISCLAIMER.md)
+
+On the hosted app: [Terms](https://chayprabs.github.io/grok-pattern-playground/terms) · [Privacy](https://chayprabs.github.io/grok-pattern-playground/privacy)
+
+These documents disclaim warranties and limit liability to the extent permitted by applicable law. They do not guarantee immunity from legal claims in every jurisdiction. Consider independent legal review for your use case.
 
 ## GitHub topics
 
@@ -72,5 +84,5 @@ MIT — see [LICENSE](LICENSE).
 
 - [GitHub](https://github.com/chayprabs/grok-pattern-playground)
 - [Live demo](https://chayprabs.github.io/grok-pattern-playground/) (GitHub Pages, after deploy workflow runs)
-- [Privacy Policy](/privacy) (when hosted)
-- [Terms](/terms)
+- [Privacy Policy](docs/legal/PRIVACY.md)
+- [Terms and Conditions](docs/legal/TERMS.md)

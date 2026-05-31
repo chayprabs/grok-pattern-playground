@@ -12,10 +12,22 @@ function HomePage() {
       <SeoBar />
       <Playground />
       <footer className="site-footer">
+        <p className="footer-legal-notice">
+          By using GrokParse you agree to the{" "}
+          <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.
+        </p>
         <nav>
           <a href="/privacy">Privacy Policy</a>
           <span aria-hidden="true">·</span>
           <a href="/terms">Terms and Conditions</a>
+          <span aria-hidden="true">·</span>
+          <a
+            href="https://github.com/chayprabs/grok-pattern-playground/blob/main/LICENSE"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            MIT License
+          </a>
         </nav>
       </footer>
     </>
@@ -33,10 +45,22 @@ function SeoRoute({
       <SeoBar />
       <Playground defaultExport={exportDefault} />
       <footer className="site-footer">
+        <p className="footer-legal-notice">
+          By using GrokParse you agree to the{" "}
+          <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.
+        </p>
         <nav>
           <a href="/privacy">Privacy Policy</a>
           <span aria-hidden="true">·</span>
           <a href="/terms">Terms and Conditions</a>
+          <span aria-hidden="true">·</span>
+          <a
+            href="https://github.com/chayprabs/grok-pattern-playground/blob/main/LICENSE"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            MIT License
+          </a>
         </nav>
       </footer>
     </>

@@ -1,46 +1,119 @@
 import { Link } from "react-router-dom";
 import { TopBar } from "../components/TopBar";
 
+const LAST_UPDATED = "June 1, 2026";
+const OPERATOR = "Chaitanya Prabuddha";
+
+function LegalFooter() {
+  return (
+    <p className="legal-footer-links">
+      <Link to="/">← Back to GrokParse</Link>
+      {" · "}
+      <a
+        href="https://github.com/chayprabs/grok-pattern-playground/blob/main/docs/legal/TERMS.md"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View on GitHub
+      </a>
+    </p>
+  );
+}
+
 export function PrivacyPage() {
   return (
     <div className="legal-page">
       <TopBar />
       <article className="legal-content">
         <h1>Privacy Policy</h1>
-        <p>Last updated: May 31, 2026</p>
         <p>
-          GrokParse (“we”, “the tool”) is a browser-only application. Your log
-          samples, grok patterns, and custom pattern definitions are processed
-          entirely on your device. We do not operate a backend that receives,
-          stores, or analyzes your input.
+          <strong>Last updated:</strong> {LAST_UPDATED} · <strong>Operator:</strong>{" "}
+          {OPERATOR}
         </p>
-        <h2>Data we do not collect</h2>
+
+        <h2>1. Scope</h2>
+        <p>
+          This policy describes GrokParse (“the Service”). The Service is{" "}
+          <strong>browser-only</strong>: after the initial page load, your log samples,
+          grok patterns, and match results are processed on your device. We do not
+          operate a backend that receives, stores, or analyzes your log content.
+        </p>
+
+        <h2>2. What we do not collect</h2>
+        <p>We do not intentionally collect, receive, or store:</p>
         <ul>
-          <li>Log lines, patterns, or match results from your session</li>
-          <li>Filenames or file contents you paste into the editor</li>
-          <li>Personal identifiers beyond what your browser sends to static hosting (if any)</li>
+          <li>Log lines, patterns, corpora, or match results from the editor</li>
+          <li>Filenames or file contents you paste into the browser</li>
+          <li>Custom patterns (except locally on your device — see below)</li>
         </ul>
-        <h2>Local storage</h2>
+        <p>We do not sell personal information or use your inputs for advertising or model training.</p>
+
+        <h2>3. Local storage</h2>
         <p>
-          Custom grok patterns may be saved in your browser’s localStorage on
-          your device only. You can clear them with the “Clear custom patterns”
-          control in the app.
+          Custom patterns may be saved in your browser’s localStorage on your device
+          only. Use “Clear custom patterns” or clear site data in your browser to
+          remove them. You are responsible for data on devices you control.
         </p>
-        <h2>Third-party links</h2>
+
+        <h2>4. Third-party hosting</h2>
         <p>
-          The header may link to GitHub, social media, or the author’s personal
-          site. Those destinations have their own privacy policies.
+          Static hosts (e.g. GitHub Pages) may log IP address, user agent, and request
+          metadata to deliver files. We do not receive your log content from those logs.
+          Third-party sites linked in the header have their own policies.
         </p>
-        <h2>Disclaimer</h2>
+
+        <h2>5. Communications you send us</h2>
         <p>
-          THE TOOL IS PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND. USE AT YOUR
-          OWN RISK. WE ARE NOT LIABLE FOR ANY DAMAGES ARISING FROM USE OF THIS
-          SOFTWARE, INCLUDING BUT NOT LIMITED TO DATA LOSS, SERVICE INTERRUPTION,
-          OR PARSING ERRORS IN PRODUCTION PIPELINES.
+          If you contact us via GitHub or email, we receive what you voluntarily send.
+          Do not include confidential production logs unless necessary.
         </p>
+
+        <h2>6. Children</h2>
         <p>
-          <Link to="/">← Back to GrokParse</Link>
+          The Service is not directed at children under 16. We do not knowingly collect
+          children’s personal information.
         </p>
+
+        <h2>7. International users</h2>
+        <p>
+          The Service may be used worldwide. Core tool inputs are not transferred to us.
+          Rights regarding hosting logs or voluntary messages may apply under local law —
+          contact us to exercise them where required.
+        </p>
+
+        <h2>8. Security and retention</h2>
+        <p>
+          No transmission method is 100% secure. We do not retain in-browser log content
+          on our servers. See{" "}
+          <a
+            href="https://github.com/chayprabs/grok-pattern-playground/blob/main/SECURITY.md"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            SECURITY.md
+          </a>{" "}
+          for vulnerability reporting.
+        </p>
+
+        <h2>9. Changes</h2>
+        <p>
+          We may update this policy. Continued use after changes constitutes acceptance
+          where permitted by law.
+        </p>
+
+        <h2>10. Relationship to Terms</h2>
+        <p>
+          Use of GrokParse is also governed by our{" "}
+          <Link to="/terms">Terms and Conditions</Link>, including disclaimers and
+          limitations of liability. Nothing in this policy expands our liability.
+        </p>
+
+        <p className="legal-notice">
+          This policy is not legal advice. For organizational compliance, consult
+          qualified counsel in your jurisdiction.
+        </p>
+
+        <LegalFooter />
       </article>
     </div>
   );
@@ -52,50 +125,128 @@ export function TermsPage() {
       <TopBar />
       <article className="legal-content">
         <h1>Terms and Conditions</h1>
-        <p>Last updated: May 31, 2026</p>
         <p>
-          By using GrokParse you agree to these terms. If you do not agree, do
-          not use the tool.
+          <strong>Last updated:</strong> {LAST_UPDATED} · <strong>Operator:</strong>{" "}
+          {OPERATOR}
         </p>
-        <h2>License</h2>
+
+        <p className="legal-accept">
+          <strong>
+            By using GrokParse you agree to these Terms. If you do not agree, do not use
+            the Service.
+          </strong>
+        </p>
+
+        <h2>1. The Service</h2>
         <p>
-          GrokParse is open source under the MIT License. See the repository for
-          full license text.
+          GrokParse is a free browser-based grok pattern playground for development and
+          testing. Features include matching, field inference, ReDoS warnings,
+          benchmarks, and exports. Outputs may be incorrect — validate before production.
         </p>
-        <h2>Acceptable use</h2>
+
+        <h2>2. License</h2>
         <p>
-          You may use the tool for lawful purposes only. You are responsible for
-          ensuring that log data you paste complies with your organization’s
-          policies and applicable law.
+          Source code is under the{" "}
+          <a
+            href="https://github.com/chayprabs/grok-pattern-playground/blob/main/LICENSE"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            MIT License
+          </a>
+          . These Terms govern the hosted website and Service in addition to the license.
         </p>
-        <h2>No professional advice</h2>
+
+        <h2>3. No professional advice</h2>
         <p>
-          Outputs (including ReDoS warnings and export configs) are for
-          development and testing only. They are not guaranteed to be correct,
-          secure, or suitable for production. Always validate patterns in your
-          own environment before deployment.
+          We do not provide legal, security, or compliance advice. Do not rely on match
+          results, ReDoS warnings, or exported configs as the sole basis for production
+          or regulatory decisions.
         </p>
-        <h2>Limitation of liability</h2>
+
+        <h2>4. Your responsibilities</h2>
+        <ul>
+          <li>Use the Service lawfully and only with data you have the right to process</li>
+          <li>Comply with applicable privacy, employment, and contractual obligations</li>
+          <li>Independently validate all patterns and exports before deployment</li>
+          <li>Do not misuse, attack, or disrupt the Service or its hosting</li>
+        </ul>
+
+        <h2>5. Disclaimer of warranties</h2>
         <p>
-          TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE AUTHORS AND CONTRIBUTORS
-          SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
-          CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS, DATA, OR
-          GOODWILL, ARISING FROM YOUR USE OF GROKPARSE, EVEN IF ADVISED OF THE
-          POSSIBILITY OF SUCH DAMAGES.
+          TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, THE SERVICE IS PROVIDED “AS
+          IS” AND “AS AVAILABLE” WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED,
+          INCLUDING MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT,
+          AND ACCURACY. We do not warrant uninterrupted, secure, or error-free operation.
         </p>
-        <h2>Indemnification</h2>
+
+        <h2>6. Limitation of liability</h2>
         <p>
-          You agree to indemnify and hold harmless the project contributors from
-          claims arising from your use of the tool or violation of these terms.
+          TO THE FULLEST EXTENT PERMITTED BY APPLICABLE LAW, THE OPERATOR AND
+          CONTRIBUTORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL,
+          CONSEQUENTIAL, EXEMPLARY, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS,
+          REVENUE, DATA, GOODWILL, BUSINESS INTERRUPTION, SECURITY INCIDENTS, OR
+          REGULATORY FINES, ARISING FROM USE OF THE SERVICE, WHETHER IN CONTRACT, TORT
+          (INCLUDING NEGLIGENCE), OR OTHERWISE, EVEN IF ADVISED OF THE POSSIBILITY.
         </p>
-        <h2>Changes</h2>
         <p>
-          We may update these terms. Continued use after changes constitutes
-          acceptance.
+          OUR TOTAL LIABILITY FOR ALL CLAIMS SHALL NOT EXCEED THE GREATER OF USD $0 OR
+          AMOUNTS YOU PAID US IN THE PRIOR 12 MONTHS (zero for the free Service). Some
+          jurisdictions limit these exclusions; they apply to the maximum extent permitted.
         </p>
+
+        <h2>7. Indemnification</h2>
         <p>
-          <Link to="/">← Back to GrokParse</Link>
+          You agree to defend, indemnify, and hold harmless the Operator and contributors
+          from claims, damages, and expenses (including reasonable legal fees) arising
+          from your use of the Service, your data, your exports, or your violation of
+          these Terms or applicable law.
         </p>
+
+        <h2>8. Assumption of risk</h2>
+        <p>
+          You assume all risks of use, including incorrect parsing, production ReDoS,
+          data loss, and self-hosting security. To the extent permitted by law, you
+          release the Operator from related claims except where release is prohibited.
+        </p>
+
+        <h2>9. Privacy and third parties</h2>
+        <p>
+          See our <Link to="/privacy">Privacy Policy</Link>. Third-party links and
+          hosting are subject to their own terms. We are not responsible for third-party
+          practices.
+        </p>
+
+        <h2>10. Changes and termination</h2>
+        <p>
+          We may modify or discontinue the Service at any time. Updated Terms are
+          effective when posted. Continued use constitutes acceptance where permitted.
+          Provisions that should survive (disclaimers, liability limits, indemnity,
+          governing law) survive termination.
+        </p>
+
+        <h2>11. Governing law</h2>
+        <p>
+          These Terms are governed by the laws of <strong>India</strong>, without regard
+          to conflict-of-law rules. Subject to mandatory consumer rights in your country,
+          courts in <strong>Bengaluru, Karnataka, India</strong> have exclusive
+          jurisdiction. Contact us first to attempt informal resolution for 30 days.
+        </p>
+
+        <h2>12. Class actions</h2>
+        <p>
+          Where permitted by law, disputes are brought only in your individual capacity,
+          not as a class or representative action.
+        </p>
+
+        <h2>13. Important notice</h2>
+        <p>
+          No legal document can guarantee that you will never face claims anywhere in
+          the world. These Terms allocate risk to the extent permitted by law. Consult
+          qualified counsel for your situation.
+        </p>
+
+        <LegalFooter />
       </article>
     </div>
   );
