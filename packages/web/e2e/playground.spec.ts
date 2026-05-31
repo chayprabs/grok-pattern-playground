@@ -60,7 +60,11 @@ test("diff mode shows error when pattern A is invalid", async ({ page }) => {
     corpus: "test line",
     mode: "diff",
   };
-  const hash = Buffer.from(JSON.stringify(state), "utf8").toString("base64");
+  const hash = Buffer.from(JSON.stringify(state), "utf8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
   await page.goto(`/#${hash}`);
   await page.waitForTimeout(400);
   await expect(page.getByText("Fix Pattern A to view diff results.")).toBeVisible({

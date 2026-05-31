@@ -13,6 +13,19 @@ describe("decodeShare", () => {
     expect(decodeShare(`#${hash}`)).toEqual(state);
   });
 
+  it("round-trips patterns containing plus signs in URL hash", () => {
+    const state = {
+      pattern: "(a+)+b",
+      corpus: "test",
+      mode: "single" as const,
+    };
+    const url = encodeShare(state);
+    const hash = url.split("#")[1] ?? "";
+    expect(hash).not.toContain("+");
+    expect(decodeShare(`#${hash}`)).toEqual(state);
+    expect(decodeShare(url)).toEqual(state);
+  });
+
   it("decodes full pasted URL", () => {
     const state = {
       pattern: "%{IP:host}",

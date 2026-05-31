@@ -51,7 +51,6 @@ export function inferFieldType(value: string, hint?: string): string {
   if (UUID.test(v)) return "uuid";
   if (DATETIME.test(v)) return "datetime";
   if (DATE.test(v)) return "date";
-  if (IPV4.test(v) || /^[\d.]+$/.test(v) && v.includes(".")) return "ip";
   return "string";
 }
 

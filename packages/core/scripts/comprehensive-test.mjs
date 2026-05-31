@@ -217,12 +217,15 @@ const patB = compile("^%{NUMBER:x}$", fullPatternLibrary);
 const diff = diffPatterns(patA, patB, ["hello", "42", "3.14"]);
 assert(
   "diffPatterns",
-  diff[0].patternA && !diff[0].patternB &&
-    !diff[1].patternA && diff[1].patternB &&
-    diff[2].patternA && diff[2].patternB,
+  diff[0].patternA &&
+    !diff[0].patternB &&
+    diff[1].patternA &&
+    diff[1].patternB &&
+    !diff[2].patternA &&
+    diff[2].patternB,
   "src/diff.ts",
   'diffPatterns("^WORD$", "^NUMBER$", ["hello","42","3.14"])',
-  "hello:A only, 42:B only, 3.14:both",
+  "hello:A only, 42:both, 3.14:B only",
   JSON.stringify(diff),
 );
 

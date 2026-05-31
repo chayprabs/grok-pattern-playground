@@ -1,7 +1,12 @@
 import { test, expect } from "@playwright/test";
 
 function shareUrl(state: Record<string, unknown>) {
-  const hash = Buffer.from(JSON.stringify(state), "utf8").toString("base64");
+  const json = JSON.stringify(state);
+  const hash = Buffer.from(json, "utf8")
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
   return `/#${hash}`;
 }
 
@@ -49,9 +54,9 @@ test.describe("verification pass", () => {
       .click();
     await page.keyboard.press("Control+a");
     await page.keyboard.type("alpha\nbeta");
-    await page.waitForTimeout(300);
+    await page.waitForTimeout(500);
 
-    await expect(page.locator(".status-match")).toHaveCount(2);
+    await expect(page.locator(".status-match")).toHaveCount(2, { timeout: 10000 });
     await page.locator(".status-match").first().click();
     await expect(page.getByRole("cell", { name: "token" })).toBeVisible();
     await expect(page.getByRole("cell", { name: "alpha" })).toBeVisible();
@@ -195,6 +200,25 @@ test.describe("verification pass", () => {
       timeout: 15000,
     });
     await expect(page.getByText(/matches\/sec/)).toBeVisible();
+  });
+
+  test("slow warning appears for high ReDoS patterns without freezing", async ({
+    page,
+  }) => {
+    await page.goto(
+      shareUrl({
+        pattern: "(a+)+b",
+        corpus: "test line",
+        mode: "single",
+      }),
+    );
+    await page.waitForTimeout(600);
+    const badge = page.locator(".redos-badge");
+    await expect(badge).toContainText("ReDoS: high", { timeout: 10000 });
+    await expect(
+      page.getByText("Worst-case input may exceed 100ms", { exact: false }),
+    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("button", { name: "Single" })).toBeEnabled();
   });
 
   test("ReDoS badge shows high risk for catastrophic pattern", async ({ page }) => {

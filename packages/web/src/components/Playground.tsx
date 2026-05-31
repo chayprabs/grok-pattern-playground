@@ -5,7 +5,6 @@ import {
   decodeShare,
   diffPatterns,
   encodeShare,
-  estimateWorstCaseMs,
   exportTo,
   fullPatternLibrary,
   matchCorpus,
@@ -42,7 +41,6 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
   const [libSearch, setLibSearch] = useState("");
   const [compileError, setCompileError] = useState<string | null>(null);
   const [compileErrorB, setCompileErrorB] = useState<string | null>(null);
-  const [slowWarning, setSlowWarning] = useState(false);
   const patternEditorRef = useRef<CodeEditorHandle>(null);
   const {
     result: workerBench,
@@ -139,15 +137,9 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
   const activeBenchStats =
     corpusLines.length >= 50 ? workerBench : benchStats;
 
-  useEffect(() => {
-    if (!compiled) {
-      setSlowWarning(false);
-      return;
-    }
-    const probe =
-      corpusLines[0] ?? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    setSlowWarning(estimateWorstCaseMs(compiled.regex, probe));
-  }, [compiled, corpusLines]);
+  const showSlowWarning =
+    compiled !== null &&
+    (compiled.reDosRisk === "high" || compiled.reDosRisk === "medium");
 
   const exportContent = useMemo(() => {
     if (!compiled) return "";
@@ -263,7 +255,7 @@ export function Playground({ defaultExport }: { defaultExport?: ExportTarget }) 
           {compiled && (
             <div className="redos-badge" data-risk={compiled.reDosRisk}>
               ReDoS: {compiled.reDosRisk}
-              {slowWarning && (
+              {showSlowWarning && (
                 <span className="warn-item">
                   Worst-case input may exceed 100ms — test on a small corpus first.
                 </span>

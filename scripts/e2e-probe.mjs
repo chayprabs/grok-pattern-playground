@@ -13,6 +13,8 @@ import {
   encodeShare,
   decodeShare,
   diffPatterns,
+  evalCorpusP95,
+  inferFieldType,
   fullPatternLibrary,
   sampleLogs,
 } from "../packages/core/dist/index.js";
@@ -43,7 +45,9 @@ function uiSearchLibrary(query) {
   return Object.values(fullPatternLibrary).filter(
     (p) =>
       p.name.toLowerCase().includes(q) ||
-      (p.description?.toLowerCase().includes(q) ?? false),
+      (p.description?.toLowerCase().includes(q) ?? false) ||
+      (p.pattern?.toLowerCase().includes(q) ?? false) ||
+      (p.example?.toLowerCase().includes(q) ?? false),
   );
 }
 
@@ -292,6 +296,88 @@ const extras = [
 for (const [pat, line] of extras) {
   assert(`extra ${pat}`, matchLine(compile(pat, fullPatternLibrary), line).matched, line.slice(0, 60), "packages/core/src/patterns/standard.ts", `Fix ${pat}`);
 }
+
+console.log("\n=== 9. IPv4-mapped IPv6 & field inference ===\n");
+
+const ipPat = compile("%{IP:host:ip}", fullPatternLibrary);
+const mapped = "::ffff:192.0.2.1";
+const mappedMatch = matchLine(ipPat, mapped);
+assert(
+  "IP captures full IPv4-mapped IPv6",
+  mappedMatch.matched && mappedMatch.captures.host?.value === mapped,
+  JSON.stringify(mappedMatch.captures),
+  "packages/core/src/patterns/standard.ts",
+  "Fix IPV4_MAPPED / IP expansion",
+);
+assert(
+  "inferFieldType IPv4-mapped → ipv6",
+  inferFieldType(mapped) === "ipv6",
+  inferFieldType(mapped),
+  "packages/core/src/field-types.ts",
+  "Detect ::ffff: prefix as ipv6",
+);
+
+console.log("\n=== 10. diffPatterns (core ↔ web Playground) ===\n");
+
+const patA = compile("^%{WORD:x}$", fullPatternLibrary);
+const patB = compile("^%{NUMBER:x}$", fullPatternLibrary);
+const diff = diffPatterns(patA, patB, ["hello", "42", "3.14"]);
+assert(
+  "diff hello matches A only",
+  diff[0].patternA && !diff[0].patternB && diff[0].changed,
+  JSON.stringify(diff[0]),
+  "packages/core/src/diff.ts",
+  "Fix pattern A matching",
+);
+assert(
+  "diff 42 matches both (WORD includes digits)",
+  diff[1].patternA && diff[1].patternB && !diff[1].changed,
+  JSON.stringify(diff[1]),
+  "packages/core/src/diff.ts",
+  "Expected overlap on numeric token",
+);
+assert(
+  "diff 3.14 matches B only",
+  !diff[2].patternA && diff[2].patternB && diff[2].changed,
+  JSON.stringify(diff[2]),
+  "packages/core/src/diff.ts",
+  "Fix NUMBER decimal matching",
+);
+
+console.log("\n=== 11. Performance p95 on 1000-line corpus ===\n");
+
+const corpus1000 = Array.from(
+  { length: 1000 },
+  () =>
+    '127.0.0.1 - - [10/Oct/2023:13:55:36 +0000] "GET / HTTP/1.1" 200 1234 "-" "curl"',
+);
+const benchCompiled = compile("%{COMBINEDAPACHELOG}", fullPatternLibrary);
+const p95 = evalCorpusP95(benchCompiled, corpus1000, 7);
+assert(
+  "evalCorpusP95 COMBINEDAPACHELOG < 50ms",
+  p95 < 50,
+  `p95=${p95.toFixed(2)}ms on 1000 lines`,
+  "packages/core/src/benchmark.ts",
+  "Optimize matchLine / regex compilation for large corpus",
+);
+
+console.log("\n=== 12. Web integration parity (buildLibrary + search) ===\n");
+
+const webLib = mergeLibraries(fullPatternLibrary, {});
+assert(
+  "buildLibrary merge preserves fullPatternLibrary keys",
+  Object.keys(webLib).length === Object.keys(fullPatternLibrary).length,
+  `core=${Object.keys(fullPatternLibrary).length} web=${Object.keys(webLib).length}`,
+  "packages/web/src/lib/patternLib.ts",
+  "Ensure mergeLibraries passes through all patterns",
+);
+assert(
+  'web search "ipv4" finds IP pattern',
+  uiSearchLibrary("ipv4").some((p) => p.name === "IP"),
+  uiSearchLibrary("ipv4").map((p) => p.name).join(","),
+  "packages/web/src/components/Playground.tsx",
+  "Search pattern/example fields for ipv4",
+);
 
 console.log("\n=== SUMMARY ===");
 console.log(`Passed: ${passed}`);

@@ -15,6 +15,11 @@ describe("regression fixes", () => {
     expect(inferFieldType("::ffff:192.0.2.1")).toBe("ipv6");
   });
 
+  it("does not classify invalid dotted numbers as ip", () => {
+    expect(inferFieldType("999.999.999.999")).toBe("string");
+    expect(inferFieldType("256.1.1.1")).toBe("string");
+  });
+
   it("does not flag NUMBER pattern as high ReDoS", () => {
     const c = compile("%{NUMBER:x}", fullPatternLibrary);
     expect(c.reDosRisk).not.toBe("high");
