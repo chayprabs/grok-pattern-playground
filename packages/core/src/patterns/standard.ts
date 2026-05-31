@@ -24,7 +24,7 @@ export const standardPatterns: PatternLibrary = {
   SPACE: { name: "SPACE", pattern: "\\s*", description: "Whitespace" },
   DATA: { name: "DATA", pattern: ".*?", description: "Lazy any data" },
   GREEDYDATA: { name: "GREEDYDATA", pattern: ".*", description: "Greedy any data" },
-  QUOTEDSTRING: { name: "QUOTEDSTRING", pattern: "(?>\"(?>[^\"\\\\]+|\\\\.)*\")" },
+  QUOTEDSTRING: { name: "QUOTEDSTRING", pattern: "\"(?:[^\"\\\\]|\\\\.)*\"" },
   UUID: {
     name: "UUID",
     pattern: "[A-Fa-f0-9]{8}-(?:[A-Fa-f0-9]{4}-){3}[A-Fa-f0-9]{12}",
@@ -90,14 +90,14 @@ export const standardPatterns: PatternLibrary = {
   COMMONAPACHELOG: {
     name: "COMMONAPACHELOG",
     pattern:
-      '%{IPORHOST:clientip} %{HTTPDUSER:ident} %{HTTPDUSER:auth} \\[%{HTTPDATE:timestamp}\\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)',
+      '%{IPORHOST:clientip} %{HTTPDUSER:ident} %{HTTPDUSER:auth} \\[%{NGINXLOGDATE:timestamp}\\] "(?:%{WORD:verb} %{NOTSPACE:request}(?: HTTP/%{NUMBER:httpversion})?|%{DATA:rawrequest})" %{NUMBER:response} (?:%{NUMBER:bytes}|-)',
     description: "Apache combined log format",
   },
   COMBINEDAPACHELOG: {
     name: "COMBINEDAPACHELOG",
     pattern: '%{COMMONAPACHELOG} "%{DATA:referrer}" "%{DATA:agent}"',
   },
-  HTTPDUSER: { name: "HTTPDUSER", pattern: "%{USER}" },
+  HTTPDUSER: { name: "HTTPDUSER", pattern: "(?:%{USER}|-)" },
   HTTPD24_ERRORLOG: {
     name: "HTTPD24_ERRORLOG",
     pattern: "\\[%{HTTPDATE:timestamp}\\] \\[%{LOGLEVEL:level}\\] (?:\\[client %{IPORHOST:clientip}\\] )?%{GREEDYDATA:message}",
@@ -133,11 +133,17 @@ export const standardPatterns: PatternLibrary = {
   TTY: { name: "TTY", pattern: "(?:/dev/)?(?:[px]ty|tty|pts)\\S+" },
   // AWS CloudTrail-ish
   AWS_REQUEST_ID: { name: "AWS_REQUEST_ID", pattern: "[A-Za-z0-9-]+" },
+  NGINXLOGDATE: {
+    name: "NGINXLOGDATE",
+    pattern:
+      "%{MONTHDAY}/%{MONTH}/%{YEAR}:%{TIME} (?:%{DATA:tz})?",
+    description: "Nginx bracket timestamp",
+  },
   // Nginx
   NGINXACCESS: {
     name: "NGINXACCESS",
     pattern:
-      '%{IPORHOST:clientip} - %{HTTPDUSER:ident} \\[%{HTTPDATE:timestamp}\\] "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:httpversion}" %{NUMBER:response} %{NUMBER:bytes} "%{DATA:referrer}" "%{DATA:agent}"',
+      '%{IPORHOST:clientip} - %{HTTPDUSER:ident} \\[%{NGINXLOGDATE:timestamp}\\] "%{WORD:verb} %{URIPATHPARAM:request} HTTP/%{NUMBER:httpversion}" %{NUMBER:response} %{NUMBER:bytes} "%{DATA:referrer}" "%{DATA:agent}"',
     description: "Nginx access log",
   },
   URIPATHPARAM: { name: "URIPATHPARAM", pattern: "%{URIPATH}(?:\\?%{URIQUERY})?" },

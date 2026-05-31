@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @grokparse/core build
+      - run: pnpm --filter @grokparse/core test
+      - run: pnpm --filter @grokparse/web build
+      - run: pnpm exec playwright install chromium --with-deps
+        working-directory: packages/web
+      - run: pnpm --filter @grokparse/web test:e2e
+      - name: Bundle size budget (500 KB gz)
+        run: |
+          GZ=$(gzip -c packages/web/dist/assets/*.js 2>/dev/null | wc -c || echo 0)
+          echo "Gzipped JS size: $GZ bytes"
+          if [ "$GZ" -gt 512000 ]; then
+            echo "Bundle exceeds 500 KB gz budget"
+            exit 1
+          fi

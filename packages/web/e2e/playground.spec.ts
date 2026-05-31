@@ -1,0 +1,43 @@
+import { test, expect } from "@playwright/test";
+
+test("home page loads playground", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "GrokParse" })).toBeVisible();
+  await expect(page.getByLabel("Grok pattern")).toBeVisible();
+  await expect(page.getByLabel("Log corpus")).toBeVisible();
+});
+
+test("matching shows green results for apache sample", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Sample logs").selectOption("apache");
+  await page.waitForTimeout(200);
+  const results = page.locator(".status-match");
+  await expect(results.first()).toBeVisible({ timeout: 5000 });
+});
+
+test("seo sub-routes load", async ({ page }) => {
+  for (const path of [
+    "/grok-debugger",
+    "/logstash-grok-tester",
+    "/grok-to-vector",
+    "/grok-to-fluentbit",
+    "/grok-pattern-library",
+  ]) {
+    await page.goto(path);
+    await expect(page.getByLabel("Grok pattern")).toBeVisible();
+  }
+});
+
+test("legal pages", async ({ page }) => {
+  await page.goto("/privacy");
+  await expect(page.getByRole("heading", { name: "Privacy Policy" })).toBeVisible();
+  await page.goto("/terms");
+  await expect(page.getByRole("heading", { name: "Terms and Conditions" })).toBeVisible();
+});
+
+test("export panel copies config", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator(".export-output")).toContainText("transforms", {
+    timeout: 5000,
+  });
+});

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>/</loc></url>
+  <url><loc>/grok-debugger</loc></url>
+  <url><loc>/logstash-grok-tester</loc></url>
+  <url><loc>/grok-to-vector</loc></url>
+  <url><loc>/grok-to-fluentbit</loc></url>
+  <url><loc>/grok-pattern-library</loc></url>
+  <url><loc>/privacy</loc></url>
+  <url><loc>/terms</loc></url>
+</urlset>
