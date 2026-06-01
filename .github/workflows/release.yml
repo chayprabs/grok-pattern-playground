@@ -38,7 +38,7 @@ jobs:
           "
           pnpm exec vite build -c vite.single.config.ts
       - name: Upload dist artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: grokparse-web-dist
           path: |
