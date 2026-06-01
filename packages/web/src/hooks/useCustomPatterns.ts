@@ -15,11 +15,6 @@ export function useCustomPatterns() {
     }
   }, []);
 
-  const save = useCallback((patterns: Record<string, PatternDefinition>) => {
-    setCustom(patterns);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(patterns));
-  }, []);
-
   const addPattern = useCallback(
     (name: string, pattern: string, description?: string) => {
       setCustom((prev) => {
