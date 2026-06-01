@@ -22,22 +22,28 @@ export function useCustomPatterns() {
 
   const addPattern = useCallback(
     (name: string, pattern: string, description?: string) => {
-      const next = {
-        ...custom,
-        [name]: { name, pattern, description },
-      };
-      save(next);
+      setCustom((prev) => {
+        const next = {
+          ...prev,
+          [name]: { name, pattern, description },
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        return next;
+      });
     },
-    [custom, save],
+    [],
   );
 
   const removePattern = useCallback(
     (name: string) => {
-      const next = { ...custom };
-      delete next[name];
-      save(next);
+      setCustom((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        return next;
+      });
     },
-    [custom, save],
+    [],
   );
 
   const clearAll = useCallback(() => {

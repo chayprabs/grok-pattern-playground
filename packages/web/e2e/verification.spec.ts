@@ -169,16 +169,23 @@ test.describe("verification pass", () => {
   test("custom pattern works and worker benchmark runs for 55+ lines", async ({
     page,
   }) => {
+    await page.addInitScript(() => {
+      localStorage.removeItem("grokparse-custom-patterns");
+    });
     await page.goto("/");
     await waitForPatternEditor(page);
 
     await page.getByPlaceholder("NAME").fill("MYLINE");
     await page.getByPlaceholder("regex or %{SUB}").fill("[a-z]+");
     await page.getByRole("button", { name: "Add", exact: true }).click();
+    await expect(page.getByText("MYLINE")).toBeVisible();
 
     await page.getByRole("group", { name: "Grok pattern" }).locator(".monaco-editor").click();
     await page.keyboard.press("Control+a");
     await page.keyboard.type("%{MYLINE:word}");
+    await expect(page.locator("#pattern")).toHaveValue("%{MYLINE:word}", {
+      timeout: 10000,
+    });
 
     const lines = Array.from({ length: 55 }, (_, i) => `word${i}`).join("\n");
     await page
@@ -187,7 +194,7 @@ test.describe("verification pass", () => {
       .click();
     await page.keyboard.press("Control+a");
     await page.keyboard.type(lines);
-    await page.waitForTimeout(1500);
+    await expect(page.locator("#corpus")).toHaveValue(lines, { timeout: 10000 });
 
     await expect(page.getByText(/matches\/sec/)).toBeVisible({ timeout: 25000 });
     await expect(page.getByText("(worker)", { exact: false })).toBeVisible({
