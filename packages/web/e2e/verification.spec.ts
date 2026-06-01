@@ -187,10 +187,7 @@ test.describe("verification pass", () => {
     await expect(page.locator("#pattern")).toHaveValue("%{MYLINE:word}", {
       timeout: 10000,
     });
-    await expect(page.locator("#corpus")).toHaveValue(lines, { timeout: 10000 });
-    await expect(page.locator(".status-match").first()).toBeVisible({
-      timeout: 10000,
-    });
+    await expect(page.locator(".status-match")).toHaveCount(55, { timeout: 10000 });
 
     await expect(page.getByText(/matches\/sec/)).toBeVisible({ timeout: 25000 });
     await expect(page.getByText("(worker)", { exact: false })).toBeVisible({
